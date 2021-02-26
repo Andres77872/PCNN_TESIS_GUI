@@ -6,10 +6,9 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
-import java.util.Scanner;
 
-public class Front {
-    public static String PCNN_PATH="C:\\Users\\Andres\\Spyder Proyectos\\PCNN\\__temp__";
+public class Front implements Runnable {
+    public static String PCNN_PATH = "C:\\Users\\Andres\\Spyder Proyectos\\PCNN\\__temp__";
 
 
     public JPanel root;
@@ -42,9 +41,15 @@ public class Front {
     private JPanel JP_ImgReferencia;
     private JLabel Jlbl_Entrada;
     private JLabel Jlbl_Referencia;
+    private JButton Jbtb_LimpiarReferencia;
+    private JButton Jbtb_LimpiarEntrada;
+    private JButton LOGDEBUGButton;
 
     private JFileChooser jfc = new JFileChooser();
     File F_imgEntrada, F_imgRef;
+
+    private JFrame log;
+    private log lg = new log();
 
     public Front() {
         jfc.addChoosableFileFilter(
@@ -85,71 +90,202 @@ public class Front {
         mejorarButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String COMANDO = ((F_imgEntrada != null) ? F_imgEntrada.toString() : "path") + "," +
-                        ((F_imgRef != null) ? F_imgRef.toString() : "path") + "," +
-                        ((Jcbx_Metricas_MSE.isSelected()) ? "1" : "0") + "," +
-                        ((Jcbx_Metricas_SSIM.isSelected()) ? "1" : "0") + "," +
-                        ((Jcbx_Metricas_PSNR.isSelected()) ? "1" : "0") + "," +
-                        ((Jcbx_Metricas_VIF.isSelected()) ? "1" : "0") + "," +
-                        ((Jcbx_Algoritmos_Propuesto.isSelected()) ? "1" : "0") + "," +
-                        ((Jcbx_Algoritmos_PCNN.isSelected()) ? "1" : "0") + "," +
-                        ((Jcbx_Algoritmos_SPCNN.isSelected()) ? "1" : "0") + "," +
-                        ((Jcbx_Algoritmos_SCM.isSelected()) ? "1" : "0") + "," +
-                        ((Jcbx_Algoritmos_ICM.isSelected()) ? "1" : "0") + "," +
-                        ((Jcbx_Algoritmos_EH.isSelected()) ? "1" : "0") + "," +
-                        ((Jcbx_Algoritmos_CLAHE.isSelected()) ? "1" : "0");
-                System.out.println(COMANDO);
-
-                try {
-                    jp(COMANDO.replace(","," "));
-                } catch (IOException ioException) {
-                    ioException.printStackTrace();
+                evtMejoraImagenUnitario();
+            }
+        });
+        Jbtb_LimpiarEntrada.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Jtxf_ImgPathEntrada.setText("");
+                F_imgEntrada = null;
+            }
+        });
+        Jbtb_LimpiarReferencia.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Jtxf_ImgPathReferencia.setText("");
+                F_imgRef = null;
+            }
+        });
+        LOGDEBUGButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (log == null) {
+                    log = new JFrame("LOG");
+                    log.setContentPane(lg.root);
+                    log.setDefaultCloseOperation(log.HIDE_ON_CLOSE);
+                    log.setSize(800, 600);
+                    log.setLocationRelativeTo(null);
+                    log.setVisible(true);
+                } else if (!log.isShowing()) {
+                    log.setVisible(true);
                 }
-
-                JFrame g = new JFrame("Mejora una imagen");
-                g.setContentPane(new MejoraImagenUNITARIO(COMANDO).root);
-                g.setDefaultCloseOperation(g.DISPOSE_ON_CLOSE);
-                g.setSize(800,600);
-                g.setLocationRelativeTo(null);
-                g.setVisible(true);
-
             }
         });
     }
 
     private int c = 1;
+    PipedInputStream stdOutPin = new PipedInputStream();
 
-    public void jp(String cmd) throws IOException {
-        Scanner lee = new Scanner(System.in);
+    private void evtMejoraImagenUnitario() {
+        if(P==null||!P.isAlive()){
+            Thread stdOutReader;
+            stdOutReader = new Thread(this);
+            stdOutReader.setDaemon(true);
+            stdOutReader.start();
+        }else{
+            showErrorMSG("Ya se esta ejecutando un proceso\t->\t" + P.info());
+        }
+
+    }
+
+    public void showErrorMSG(String msg) {
+        JOptionPane.showMessageDialog(null, msg, "ERROR", JOptionPane.ERROR_MESSAGE);
+        lg.setText("ERROR: " + msg);
+    }
+
+    private boolean stop = false;
+
+    public synchronized void run() {
+        if (F_imgEntrada == null) {
+            showErrorMSG("No hay imagen de entrada");
+            return;
+        }
+        if (F_imgRef == null && (Jcbx_Metricas_MSE.isSelected() ||
+                Jcbx_Metricas_SSIM.isSelected() ||
+                Jcbx_Metricas_PSNR.isSelected() ||
+                Jcbx_Metricas_VIF.isSelected())) {
+            showErrorMSG("Para calcular metricas es neceraria una imagen de referencia");
+            return;
+        } else if (F_imgRef != null && !(Jcbx_Metricas_MSE.isSelected() ||
+                Jcbx_Metricas_SSIM.isSelected() ||
+                Jcbx_Metricas_PSNR.isSelected() ||
+                Jcbx_Metricas_VIF.isSelected())) {
+            showErrorMSG("Hay imagen de referencia pero no hay metricas seleccionadas");
+            return;
+        }
+        String COMANDO = ((F_imgEntrada != null) ? F_imgEntrada.toString() : "path") + "," +
+                ((F_imgRef != null) ? F_imgRef.toString() : "path") + "," +
+                ((Jcbx_Metricas_MSE.isSelected()) ? "1" : "0") + "," +
+                ((Jcbx_Metricas_SSIM.isSelected()) ? "1" : "0") + "," +
+                ((Jcbx_Metricas_PSNR.isSelected()) ? "1" : "0") + "," +
+                ((Jcbx_Metricas_VIF.isSelected()) ? "1" : "0") + "," +
+                ((Jcbx_Algoritmos_Propuesto.isSelected()) ? "1" : "0") + "," +
+                ((Jcbx_Algoritmos_PCNN.isSelected()) ? "1" : "0") + "," +
+                ((Jcbx_Algoritmos_SPCNN.isSelected()) ? "1" : "0") + "," +
+                ((Jcbx_Algoritmos_SCM.isSelected()) ? "1" : "0") + "," +
+                ((Jcbx_Algoritmos_ICM.isSelected()) ? "1" : "0") + "," +
+                ((Jcbx_Algoritmos_EH.isSelected()) ? "1" : "0") + "," +
+                ((Jcbx_Algoritmos_CLAHE.isSelected()) ? "1" : "0");
+
+        try {
+            jp(COMANDO.replace(",", " "));
+        } catch (IOException ioException) {
+            ioException.printStackTrace();
+        }
+
+        while (!stop) {
+            if (!P.isAlive()) {
+                stop = true;
+            }
+            try {
+                this.wait(100);
+            } catch (InterruptedException ie) {
+            }
+            try {
+                if (System.in.available() != 0) {
+                    String input = this.readLine(System.in);
+                    lg.setText(input);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        JFrame g = new JFrame("Mejora una imagen");
+        g.setContentPane(new MejoraImagenUNITARIO(COMANDO).root);
+        g.setDefaultCloseOperation(g.DISPOSE_ON_CLOSE);
+        g.setSize(800, 600);
+        g.setLocationRelativeTo(null);
+        g.setVisible(true);
+    }
+
+    private synchronized String readLine(InputStream in) throws IOException {
+        String input = "";
+        do {
+            int available = in.available();
+            if (available == 0) {
+                break;
+            }
+            byte b[] = new byte[available];
+            in.read(b);
+            input += new String(b, 0, b.length);
+        } while (!input.endsWith("\n") && !input.endsWith("\r\n") && !stop);
+        return input.trim();
+    }
+
+    Process P;
+
+    private void jp(String cmd) throws IOException {
+        resetUnitario();
         //        ProcessBuilder PB = new ProcessBuilder("C:\\Users\\Andres\\Anaconda3\\Scripts\\activate.bat","cd..","python.exe", "C:\\Users\\Andres\\Documents\\Python Programas\\java_python\\py.py");
         try (PrintWriter PW_Script = new PrintWriter(new FileOutputStream("S.bat", false))) {
             PW_Script.println(""
                     + "cd C:\\Users\\Andres\\Spyder Proyectos\\PCNN\n"
                     + "call C:\\Users\\Andres\\Anaconda3\\Scripts\\activate.bat OpenCl\n"
-                    + "python \"C:\\Users\\Andres\\Spyder Proyectos\\PCNN\\API.py\" " + cmd + "\n"+
+                    + "python \"C:\\Users\\Andres\\Spyder Proyectos\\PCNN\\API.py\" " + cmd + "\n" +
                     "");
         }
 
         ProcessBuilder PB = new ProcessBuilder("S.bat");
         PB.redirectInput(ProcessBuilder.Redirect.PIPE);
         PB.redirectOutput(ProcessBuilder.Redirect.PIPE);
-        PB.redirectError(ProcessBuilder.Redirect.PIPE);
-        Process P = PB.start();
-        PrintWriter PW = new PrintWriter(P.getOutputStream());
-        BufferedReader BR = new BufferedReader(new InputStreamReader(P.getInputStream()));
+        PB.redirectError(ProcessBuilder.Redirect.INHERIT);
 
-        String S;
+        P = PB.start();
+
+        System.setIn(P.getInputStream());
+
+        //stdOutPin=P.getInputStream();
+
+
+        //BufferedReader BR = new BufferedReader(new InputStreamReader(P.getInputStream()));
+
+        //String S;
         //System.out.println(Arrays.toString(BR.lines().toArray()));
-        long timestamp = System.currentTimeMillis();
+        //long timestamp = System.currentTimeMillis();
 
-        while ((S = BR.readLine()) != null) {
-            System.out.println(S);
-        }
+        //while ((S = BR.readLine()) != null) {
+        //    lg.setText(S);
+        //}
         //BR.lines().forEach((e)->{
         //    System.out.println(e);
         //});
 
-        System.out.println("Tiempo: " + (System.currentTimeMillis() - timestamp) + ", Numeros: " + (c - 1));
+        //lg.setText("Tiempo de ejecucion en python:\t->\t"+(System.currentTimeMillis() - timestamp)+"ms");
+
+        //System.out.println("Tiempo: " + (System.currentTimeMillis() - timestamp) + ", Numeros: " + (c - 1));
 
     }
+
+    private void delFile(File f) {
+        File[] contents = f.listFiles();
+        if (contents != null) {
+            for (File file : contents) {
+                delFile(file);
+            }
+        }
+        f.delete();
+    }
+
+    private void makeFile(File f) {
+        f.mkdirs();
+        new File(f, "IND").mkdirs();
+    }
+
+    private void resetUnitario() {
+        File F = new File(PCNN_PATH);
+        delFile(F);
+        makeFile(F);
+    }
+
 }
