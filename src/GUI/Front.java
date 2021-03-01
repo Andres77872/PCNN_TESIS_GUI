@@ -9,6 +9,7 @@ import java.io.*;
 
 public class Front implements Runnable {
     public static String PCNN_PATH = "C:\\Users\\Andres\\Spyder Proyectos\\PCNN\\__temp__";
+    public static int reshape = 300;
 
 
     public JPanel root;
@@ -54,7 +55,7 @@ public class Front implements Runnable {
     public Front() {
         jfc.addChoosableFileFilter(
                 new FileNameExtensionFilter(
-                        "Imagen", "png", "jpg"));
+                        "Imgaen", "png", "jpg"));
         abrirImagenButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -67,7 +68,7 @@ public class Front implements Runnable {
                                     new ImageIcon(
                                             F_imgEntrada.toString())
                                             .getImage()
-                                            .getScaledInstance(200, 200, Image.SCALE_DEFAULT)));
+                                            .getScaledInstance(reshape, reshape, Image.SCALE_DEFAULT)));
                 }
             }
         });
@@ -83,57 +84,46 @@ public class Front implements Runnable {
                                     new ImageIcon(
                                             F_imgRef.toString())
                                             .getImage()
-                                            .getScaledInstance(200, 200, Image.SCALE_DEFAULT)));
+                                            .getScaledInstance(reshape, reshape, Image.SCALE_DEFAULT)));
                 }
             }
         });
-        mejorarButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                evtMejoraImagenUnitario();
-            }
+        mejorarButton.addActionListener(e -> evtMejoraImagenUnitario());
+        Jbtb_LimpiarEntrada.addActionListener(e -> {
+            Jtxf_ImgPathEntrada.setText("");
+            F_imgEntrada = null;
         });
-        Jbtb_LimpiarEntrada.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                Jtxf_ImgPathEntrada.setText("");
-                F_imgEntrada = null;
-            }
+        Jbtb_LimpiarReferencia.addActionListener(e -> {
+            Jtxf_ImgPathReferencia.setText("");
+            F_imgRef = null;
         });
-        Jbtb_LimpiarReferencia.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                Jtxf_ImgPathReferencia.setText("");
-                F_imgRef = null;
-            }
-        });
-        LOGDEBUGButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (log == null) {
-                    log = new JFrame("LOG");
-                    log.setContentPane(lg.root);
-                    log.setDefaultCloseOperation(log.HIDE_ON_CLOSE);
-                    log.setSize(800, 600);
-                    log.setLocationRelativeTo(null);
-                    log.setVisible(true);
-                } else if (!log.isShowing()) {
-                    log.setVisible(true);
-                }
+        LOGDEBUGButton.addActionListener(e -> {
+            if (log == null) {
+                log = new JFrame("LOG");
+                log.setContentPane(lg.root);
+                log.setDefaultCloseOperation(log.HIDE_ON_CLOSE);
+                log.setSize(800, 600);
+                log.setLocationRelativeTo(null);
+                log.setVisible(true);
+            } else if (!log.isShowing()) {
+                log.setVisible(true);
             }
         });
     }
 
-    private int c = 1;
-    PipedInputStream stdOutPin = new PipedInputStream();
-
     private void evtMejoraImagenUnitario() {
-        if(P==null||!P.isAlive()){
+        if (P == null) {
             Thread stdOutReader;
             stdOutReader = new Thread(this);
             stdOutReader.setDaemon(true);
             stdOutReader.start();
-        }else{
+        } else if (!P.isAlive()) {
+            stop = false;
+            Thread stdOutReader;
+            stdOutReader = new Thread(this);
+            stdOutReader.setDaemon(true);
+            stdOutReader.start();
+        } else {
             showErrorMSG("Ya se esta ejecutando un proceso\t->\t" + P.info());
         }
 

@@ -4,7 +4,7 @@ import javax.swing.*;
 
 public class main {
         public static void main(String[] args) {
-            //26/02/2021
+            //28/02/2021
             try {
                 UIManager.setLookAndFeel(
                         UIManager.getSystemLookAndFeelClassName());
@@ -13,7 +13,7 @@ public class main {
             }
 
             new Thread(() -> {
-                JFrame g = new JFrame("pcnn 0.0.3");
+                JFrame g = new JFrame("pcnn 0.0.4");
                 g.setContentPane(new Front().root);
                 g.setDefaultCloseOperation(g.EXIT_ON_CLOSE);
                 g.setSize(800,600);
