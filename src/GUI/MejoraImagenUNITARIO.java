@@ -9,8 +9,6 @@ import org.jfree.data.category.DefaultCategoryDataset;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.*;
@@ -18,88 +16,60 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-public class MejoraImagenUNITARIO {
+import static MAIN.main.PCNN_PATH;
+import static MAIN.main.reshape;
+import static UTIL.FileUtil.loadHistogramas;
+import static UTIL.FileUtil.loadMetricas;
+
+public class MejoraImagenUNITARIO extends JFrame {
     public JPanel root;
     private JTabbedPane Jtbp_Algoritmos;
     private JTabbedPane Jtbp_Evaluacion;
 
-    private Map<String, Map<String, Double>> METRICAS = new HashMap<>();
-    private Map<String, Map<String, double[]>> HISTOGRAMAS = new HashMap<>();
+    private Map<String, Map<String, Map<String, Double>>> METRICAS = new HashMap<>();
+    private Map<String, Map<String, Map<String, double[]>>> HISTOGRAMAS = new HashMap<>();
     private Map<String, DefaultCategoryDataset> dataset = new HashMap<>();
 
-    public MejoraImagenUNITARIO(String Comando) {
+    private File fo;
+    
+    public MejoraImagenUNITARIO(String Comando, File fo) {
+        METRICAS = loadMetricas(new File(PCNN_PATH + "\\Metricas.json"));
+        HISTOGRAMAS = loadHistogramas(new File(PCNN_PATH + "\\Histogramas.json"));
+        this.fo=fo;
 
-        try {
-            BufferedReader BR = new BufferedReader(new FileReader(new File(Front.PCNN_PATH + "\\IND\\metricas.csv")));
-
-            BR.lines().forEach((ln) -> {
-                String met_alg[] = ln.trim().split(",");
-                Map<String, Double> alg = new HashMap<>();
-
-                for (int i = 1; i < met_alg.length; i++) {
-                    String mt[] = met_alg[i].split(":");
-                    alg.put(mt[0], Double.parseDouble(mt[1]));
-                }
-                METRICAS.put(met_alg[0], alg);
-            });
-            BR.close();
-        } catch (FileNotFoundException e) {
-            METRICAS = null;
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        try {
-            BufferedReader BR = new BufferedReader(new FileReader(new File(Front.PCNN_PATH + "\\IND\\Histogramas.csv")));
-            BR.lines().forEach((ln) -> {
-                String canal[] = ln.trim().split(":");
-                Map<String, double[]> hist = new HashMap<>();
-
-                for (int i = 1; i < canal.length; i++) {
-                    String h[] = canal[i].split(",");
-                    double histarr[] = new double[h.length - 1];
-
-                    for (int j = 1; j < h.length; j++) {
-                        histarr[j - 1] = Double.parseDouble(h[j]);
-                    }
-
-                    hist.put(h[0], histarr);
-                }
-                HISTOGRAMAS.put(canal[0], hist);
-            });
-            BR.close();
-        } catch (FileNotFoundException e) {
-            HISTOGRAMAS = null;
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        String cmd[] = Comando.split(",");
-
-        if (cmd[6].equals("1")) {
-            Jtbp_Algoritmos.addTab("Propuesto", getNewAlgoritmoPane("\\IND\\o.png", "Propuesto"));
-        }
-        if (cmd[7].equals("1")) {
-            Jtbp_Algoritmos.addTab("PCNN", getNewAlgoritmoPane("\\IND\\PCNN.png", "PCNN"));
-        }
-        if (cmd[8].equals("1")) {
-            Jtbp_Algoritmos.addTab("SPCNN", getNewAlgoritmoPane("\\IND\\SPCNN.png", "SPCNN"));
-        }
-        if (cmd[9].equals("1")) {
-            Jtbp_Algoritmos.addTab("SCM", getNewAlgoritmoPane("\\IND\\SCM.png", "SCM"));
-        }
-        if (cmd[10].equals("1")) {
-            Jtbp_Algoritmos.addTab("ICM", getNewAlgoritmoPane("\\IND\\ICM.png", "ICM"));
-        }
-        if (cmd[11].equals("1")) {
-            Jtbp_Algoritmos.addTab("HE", getNewAlgoritmoPane("\\IND\\HE.png", "HE"));
-        }
-        if (cmd[12].equals("1")) {
-            Jtbp_Algoritmos.addTab("CLAHE", getNewAlgoritmoPane("\\IND\\CLAHE.png", "CLAHE"));
+        for (String cmd : Comando.split(",")) {
+            if (cmd.equals("-propuesto")) {
+                Jtbp_Algoritmos.addTab("PROPUESTO", getNewAlgoritmoPane("\\" + fo.getName() + "\\PROPUESTO.png", "PROPUESTO"));
+            }
+            if (cmd.equals("-pcnn")) {
+                Jtbp_Algoritmos.addTab("PCNN", getNewAlgoritmoPane("\\" + fo.getName() + "\\PCNN.png", "PCNN"));
+            }
+            if (cmd.equals("-spcnn")) {
+                Jtbp_Algoritmos.addTab("SPCNN", getNewAlgoritmoPane("\\" + fo.getName() + "\\SPCNN.png", "SPCNN"));
+            }
+            if (cmd.equals("-scm")) {
+                Jtbp_Algoritmos.addTab("SCM", getNewAlgoritmoPane("\\" + fo.getName() + "\\SCM.png", "SCM"));
+            }
+            if (cmd.equals("-icm")) {
+                Jtbp_Algoritmos.addTab("ICM", getNewAlgoritmoPane("\\" + fo.getName() + "\\ICM.png", "ICM"));
+            }
+            if (cmd.equals("-he")) {
+                Jtbp_Algoritmos.addTab("HE", getNewAlgoritmoPane("\\" + fo.getName() + "\\HE.png", "HE"));
+            }
+            if (cmd.equals("-clahe")) {
+                Jtbp_Algoritmos.addTab("CLAHE", getNewAlgoritmoPane("\\" + fo.getName() + "\\CLAHE.png", "CLAHE"));
+            }
         }
 
         if (METRICAS != null) {
             Jtbp_Evaluacion.addTab("Tabla", getNewTablaPane());
         }
+
+        setTitle("Mejora una imagen");
+        setContentPane(root);
+        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+        setSize(800, 600);
+        setLocationRelativeTo(null);
 
     }
 
@@ -109,21 +79,21 @@ public class MejoraImagenUNITARIO {
         DefaultTableModel model = new DefaultTableModel();
         JTable JT = new JTable(model);
         JS.getViewport().add(JT);
-        Set<String> keySet = METRICAS.keySet();
+        Set<String> keySet = METRICAS.get(fo.getName()).keySet();
         model.addColumn("Metrica");
         for (String alg : keySet) {
             model.addColumn(alg);
         }
         model.addColumn("BTN");
-        model.setRowCount(METRICAS.get(model.getColumnName(1)).size() + 1);
+        model.setRowCount(METRICAS.get(fo.getName()).get(model.getColumnName(1)).size() + 1);
         int i = 1;
         for (String alg : keySet) {
             int j = 0;
-            for (String met : METRICAS.get(alg).keySet()) {
+            for (String met : METRICAS.get(fo.getName()).get(alg).keySet()) {
                 model.setValueAt(met, j, 0);
-                model.setValueAt(met, j, METRICAS.size() + 1);
-                model.setValueAt(alg, METRICAS.get(alg).size(), i);
-                model.setValueAt(METRICAS.get(alg).get(met), j, i);
+                model.setValueAt(met, j, METRICAS.get(fo.getName()).size() + 1);
+                model.setValueAt(alg, METRICAS.get(fo.getName()).get(alg).size(), i);
+                model.setValueAt(METRICAS.get(fo.getName()).get(alg).get(met), j, i);
                 j++;
             }
             i++;
@@ -149,7 +119,7 @@ public class MejoraImagenUNITARIO {
                     case "SPCNN":
                     case "ICM":
                     case "SCM":
-                    case "Propuesto":
+                    case "PROPUESTO":
                         return;
                     default:
                         return;
@@ -161,8 +131,8 @@ public class MejoraImagenUNITARIO {
 
     private void showGR_METRICAS(String Metrica) {
         DefaultCategoryDataset localdataset = new DefaultCategoryDataset();
-        for (String alg : METRICAS.keySet()) {
-            localdataset.addValue(METRICAS.get(alg).get(Metrica), Metrica, alg);
+        for (String alg : METRICAS.get(fo.getName()).keySet()) {
+            localdataset.addValue(METRICAS.get(fo.getName()).get(alg).get(Metrica), Metrica, alg);
         }
         class GR extends JFrame {
             DefaultCategoryDataset dataset;
@@ -216,9 +186,9 @@ public class MejoraImagenUNITARIO {
             public void setIcon(Icon icon) {
                 super.setIcon(new ImageIcon(
                         new ImageIcon(
-                                Front.PCNN_PATH + ipath)
+                                PCNN_PATH + ipath)
                                 .getImage()
-                                .getScaledInstance(Front.reshape, Front.reshape, Image.SCALE_DEFAULT)));
+                                .getScaledInstance(reshape, reshape, Image.SCALE_DEFAULT)));
             }
         });
 
@@ -247,9 +217,9 @@ public class MejoraImagenUNITARIO {
         global.addActionListener(e -> {
             String tempAlg = Jtbp_Algoritmos.getTitleAt(Jtbp_Algoritmos.getSelectedIndex());
             dataset.get(tempAlg).clear();
-            double r[] = HISTOGRAMAS.get(Jtbp_Algoritmos.getTitleAt(Jtbp_Algoritmos.getSelectedIndex())).get("r");
-            double g[] = HISTOGRAMAS.get(Jtbp_Algoritmos.getTitleAt(Jtbp_Algoritmos.getSelectedIndex())).get("g");
-            double b[] = HISTOGRAMAS.get(Jtbp_Algoritmos.getTitleAt(Jtbp_Algoritmos.getSelectedIndex())).get("b");
+            double r[] = HISTOGRAMAS.get(fo.getName()).get(Jtbp_Algoritmos.getTitleAt(Jtbp_Algoritmos.getSelectedIndex())).get("r");
+            double g[] = HISTOGRAMAS.get(fo.getName()).get(Jtbp_Algoritmos.getTitleAt(Jtbp_Algoritmos.getSelectedIndex())).get("g");
+            double b[] = HISTOGRAMAS.get(fo.getName()).get(Jtbp_Algoritmos.getTitleAt(Jtbp_Algoritmos.getSelectedIndex())).get("b");
             for (int i = 0; i < r.length; i++) {
                 dataset.get(Jtbp_Algoritmos.getTitleAt(Jtbp_Algoritmos.getSelectedIndex())).addValue(r[i] + g[i] + b[i], "rgb", (Integer) i);
             }
@@ -270,7 +240,7 @@ public class MejoraImagenUNITARIO {
 
 
         DefaultCategoryDataset localdataset = new DefaultCategoryDataset();
-        double H[] = HISTOGRAMAS.get(alg).get("r");
+        double H[] = HISTOGRAMAS.get(fo.getName()).get(alg).get("r");
         for (int i = 0; i < H.length; i++) {
             localdataset.addValue(H[i], "r", (Integer) i);
         }
@@ -284,7 +254,7 @@ public class MejoraImagenUNITARIO {
     }
 
     public void updateDataset(String key, String id, String alg) {
-        double H[] = HISTOGRAMAS.get(alg).get(key);
+        double H[] = HISTOGRAMAS.get(fo.getName()).get(alg).get(key);
         for (int i = 0; i < H.length; i++) {
             dataset.get(alg).addValue(H[i], id, (Integer) i);
         }
@@ -292,7 +262,7 @@ public class MejoraImagenUNITARIO {
 
     private String getInfoMet(String lbl) {
         String Cadena = "Informacion de la imagen\n";
-        Map<String, Double> mt = METRICAS.get(lbl);
+        Map<String, Double> mt = METRICAS.get(fo.getName()).get(lbl);
         for (String k : mt.keySet()) {
             Cadena += k + "\t" + mt.get(k) + "\n";
         }
@@ -306,7 +276,7 @@ public class MejoraImagenUNITARIO {
         model.addColumn("Metrica");
         model.addColumn("Valor");
         if (METRICAS != null) {
-            Map<String, Double> mt = METRICAS.get(lbl);
+            Map<String, Double> mt = METRICAS.get(fo.getName()).get(lbl);
             for (String k : mt.keySet()) {
                 model.addRow(new Object[]{k, mt.get(k)});
             }

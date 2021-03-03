@@ -7,10 +7,18 @@ import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 import java.awt.*;
 
-public class log {
+public class log extends JFrame{
     public JPanel root;
     public JTextPane LOGTextPane;
     private JTextField textField1;
+
+    public log(){
+        setTitle("LOG");
+        setContentPane(root);
+        setDefaultCloseOperation(log.HIDE_ON_CLOSE);
+        setSize(800, 600);
+        setLocationRelativeTo(null);
+    }
 
     public void setText(String text) {
         StyledDocument doc = LOGTextPane.getStyledDocument();
@@ -30,5 +38,10 @@ public class log {
         } catch (BadLocationException e) {
             e.printStackTrace();
         }
+    }
+
+    public void showErrorMSG(String msg) {
+        JOptionPane.showMessageDialog(null, msg, "ERROR", JOptionPane.ERROR_MESSAGE);
+        setText("ERROR: " + msg);
     }
 }
