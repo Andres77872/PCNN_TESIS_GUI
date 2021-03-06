@@ -79,13 +79,12 @@ public class Abrir extends JPanel {
 
         add(jp1);
         add(jp2);
-
     }
 
-    public evt1 asd;
-
-    public interface evt1 {
-        public void onevt1(File f);
+    public String getCMD() {
+        String cmd = ((F_imgEntrada != null) ? "-img \"" + F_imgEntrada.toString() + "\"" : "") + "," +
+                ((F_imgRef != null) ? "-ref \"" + F_imgRef.toString() + "\"" : "");
+        return cmd;
     }
 
     public void evtFileEntrada(File F) {

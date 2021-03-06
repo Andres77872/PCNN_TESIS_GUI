@@ -3,22 +3,26 @@ package GUI.COMP;
 import javax.swing.*;
 import java.awt.*;
 
-public class Metricas extends JPanel {
+public class Metricas extends JScrollPane {
     private JCheckBox Jcbx_Metricas_MSE;
     private JCheckBox Jcbx_Metricas_PSNR;
     private JCheckBox Jcbx_Metricas_SSIM;
     private JCheckBox Jcbx_Metricas_VIF;
 
     public Metricas() {
-        Jcbx_Metricas_MSE = new JCheckBox("MSE");
-        Jcbx_Metricas_PSNR = new JCheckBox("PSNR");
-        Jcbx_Metricas_SSIM = new JCheckBox("SSIM");
-        Jcbx_Metricas_VIF = new JCheckBox("VIF");
-        setLayout(new GridLayout(0, 2, 10, 10));
-        add(Jcbx_Metricas_MSE);
-        add(Jcbx_Metricas_PSNR);
-        add(Jcbx_Metricas_SSIM);
-        add(Jcbx_Metricas_VIF);
+        Jcbx_Metricas_MSE = new JCheckBox("Metrica MSE");
+        Jcbx_Metricas_PSNR = new JCheckBox("Metrica PSNR");
+        Jcbx_Metricas_SSIM = new JCheckBox("Metrica SSIM");
+        Jcbx_Metricas_VIF = new JCheckBox("Metrica VIF");
+
+        JPanel JP = new JPanel(new GridLayout(0, 1, 10, 5));
+
+        JP.add(Jcbx_Metricas_MSE);
+        JP.add(Jcbx_Metricas_PSNR);
+        JP.add(Jcbx_Metricas_SSIM);
+        JP.add(Jcbx_Metricas_VIF);
+        setViewportView(JP);
+        setBorder(BorderFactory.createTitledBorder("Metricas"));
     }
 
     public String getCMD() {

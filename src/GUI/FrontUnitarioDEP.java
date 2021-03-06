@@ -1,19 +1,16 @@
 package GUI;
 
 import GUI.COMP.*;
-import UTIL.j2p;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.*;
 
 import static MAIN.main.*;
 
-public class FrontUnitario extends JFrame {
+public class FrontUnitarioDEP extends JFrame {
 
 
     public JPanel root;
@@ -29,6 +26,8 @@ public class FrontUnitario extends JFrame {
     private JButton LOGDEBUGButton;
     private JPanel JP_Abrir;
     private JPanel JP_Opciones;
+    private JPanel JP_CONT;
+    private JPanel JP_BTN;
 
     File F_imgEntrada, F_imgRef;
     Metricas JP_MET;
@@ -37,7 +36,9 @@ public class FrontUnitario extends JFrame {
 
     Imagen Jlbl_imgEntrada, Jlbl_imgReferencia;
 
-    public FrontUnitario() {
+    public FrontUnitarioDEP() {
+        root.setLayout(new BorderLayout());
+        root.removeAll();
         Jlbl_imgEntrada = new Imagen();
         Jlbl_imgReferencia = new Imagen();
 
@@ -46,25 +47,28 @@ public class FrontUnitario extends JFrame {
             public void evtFileEntrada(File F) {
                 F_imgEntrada = F;
                 Jlbl_imgEntrada.setLabelPic(F, reshape);
-
+                Jtbp_muestra.repaint();
             }
 
             @Override
             public void evtFileReferencia(File F) {
                 F_imgRef = F;
                 Jlbl_imgReferencia.setLabelPic(F, reshape);
+                Jtbp_muestra.repaint();
             }
 
             @Override
             public void evtLimpiarEntrada() {
                 F_imgEntrada = null;
                 Jlbl_imgEntrada.delPic();
+                Jtbp_muestra.repaint();
             }
 
             @Override
             public void evtLimpiarReferencia() {
                 F_imgRef = null;
                 Jlbl_imgReferencia.delPic();
+                Jtbp_muestra.repaint();
             }
         };
 
@@ -87,7 +91,7 @@ public class FrontUnitario extends JFrame {
             lg.setVisible(true);
         });
         mejoraConjuntoDeImagenesButton.addActionListener(e -> {
-            JFrame g = new FrontCarpeta();
+            JFrame g = new FrontCarpetaDEP();
             g.setVisible(true);
             dispose();
         });
@@ -99,6 +103,10 @@ public class FrontUnitario extends JFrame {
                 py.kill();
             }
         });
+
+        root.add(JP_Abrir,BorderLayout.PAGE_START);
+        root.add(JP_CONT,BorderLayout.CENTER);
+        root.add(JP_BTN,BorderLayout.PAGE_END);
 
         setTitle("PCNN " + VER);
         setContentPane(root);
@@ -128,6 +136,5 @@ public class FrontUnitario extends JFrame {
             lg.showErrorMSG("Ya se esta ejecutando un proceso\t->\t" + py.getProcessInfo());
         }
     }
-
 
 }

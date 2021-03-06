@@ -1,6 +1,6 @@
 package MAIN;
 
-import GUI.FrontUnitario;
+import GUI.FrontU;
 import GUI.log;
 import UTIL.j2p;
 
@@ -8,8 +8,8 @@ import javax.swing.*;
 
 public class main {
     public static String PCNN_PATH = "C:\\Users\\Andres\\Spyder Proyectos\\PCNN\\__temp__";
-    public static int reshape = 300;
-    public static String VER = "0.0.5";
+    public static int reshape = 450;
+    public static String VER = "0.0.6";
 
     public static final j2p py = new j2p() {
         @Override
@@ -29,7 +29,7 @@ public class main {
             e.printStackTrace();
         }
 
-        JFrame g = new FrontUnitario();
+        JFrame g = new FrontU();
         g.setVisible(true);
     }
 

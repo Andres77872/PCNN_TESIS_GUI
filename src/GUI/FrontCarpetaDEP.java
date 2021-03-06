@@ -4,14 +4,12 @@ import GUI.COMP.*;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.File;
 
 import static MAIN.main.*;
 
 
-public class FrontCarpeta extends JFrame {
+public class FrontCarpetaDEP extends JFrame {
     private JPanel root;
     private JButton Jbtn_Mejorar;
     private JButton mejoraUnitarioButton;
@@ -32,7 +30,7 @@ public class FrontCarpeta extends JFrame {
 
     ArbolFiles Jtree_Entrada, Jtree_Referencia;
 
-    public FrontCarpeta() {
+    public FrontCarpetaDEP() {
         Jtree_Entrada = new ArbolFiles();
         Jtree_Referencia = new ArbolFiles();
 
@@ -41,14 +39,14 @@ public class FrontCarpeta extends JFrame {
             @Override
             public void evtFileEntrada(File F) {
                 F_carEntrada = F;
-                Jtree_Entrada.setTree(F);
+                Jtree_Entrada.setTreeFiles(F);
 
             }
 
             @Override
             public void evtFileReferencia(File F) {
                 F_carReferencia = F;
-                Jtree_Referencia.setTree(F);
+                Jtree_Referencia.setTreeFiles(F);
             }
 
             @Override
@@ -84,7 +82,7 @@ public class FrontCarpeta extends JFrame {
         });
 
         mejoraUnitarioButton.addActionListener(e -> {
-            JFrame g = new FrontUnitario();
+            JFrame g = new FrontUnitarioDEP();
             g.setVisible(true);
             dispose();
         });
